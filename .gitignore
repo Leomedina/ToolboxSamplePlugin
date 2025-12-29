@@ -1,0 +1,20 @@
+### Gradle ###
+.gradle
+build
+jvm/
+plugin/build
+plugin/.gradle
+build-logic/build
+build-logic/.gradle
+
+### IntelliJ IDEA ###
+.idea
+
+### Kotlin ###
+.kotlin
+
+### Mac OS ###
+.DS_Store
+
+### Toolbox App ###
+toolbox-plugin.properties
