@@ -1,5 +1,6 @@
 package com.jetbrains.toolbox.sample.environment
 
+import com.jetbrains.toolbox.api.core.diagnostics.Logger
 import com.jetbrains.toolbox.api.remoteDev.EnvironmentVisibilityState
 import com.jetbrains.toolbox.api.remoteDev.RemoteProviderEnvironment
 import com.jetbrains.toolbox.api.remoteDev.environments.EnvironmentContentsView
@@ -9,8 +10,7 @@ import com.jetbrains.toolbox.api.remoteDev.states.StandardRemoteEnvironmentState
 import kotlinx.coroutines.flow.MutableStateFlow
 import com.jetbrains.toolbox.api.localization.LocalizableStringFactory
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+
 
 /**
  * Reactive wrapper around [EnvironmentConfig] that satisfies the Toolbox API.
@@ -18,7 +18,8 @@ import kotlinx.coroutines.flow.asStateFlow
 class RemoteEnvironment(
   private val initialConfig: EnvironmentConfig,
   private val contentsViewFactory: EnvironmentContentsViewFactory = ManualContentsViewFactory(),
-  private val localizableStringFactory: LocalizableStringFactory
+  private val localizableStringFactory: LocalizableStringFactory,
+  private val logger: Logger
 ) : RemoteProviderEnvironment(initialConfig.id) {
 
   // Mutable internal state
@@ -30,18 +31,17 @@ class RemoteEnvironment(
   private var _visible: Boolean = false
 
   //  Public reactive properties (observed by Toolbox UI)
-  override var name: String
-    get() = _currentConfig.name
-    set(value) {
-      _currentConfig = _currentConfig.copy(name = value)
-    }
+  override var nameFlow: MutableStateFlow<String> = _currentConfig.name
 
-  override val state: StateFlow<RemoteEnvironmentState> = _state.asStateFlow()
+  override val state: MutableStateFlow<RemoteEnvironmentState> = _state
 
-  override val description: StateFlow<EnvironmentDescription> = _description.asStateFlow()
+  override val description: MutableStateFlow<EnvironmentDescription> = _description
 
   override suspend fun getContentsView(): EnvironmentContentsView {
-    return contentsViewFactory.create(_currentConfig)
+    logger.debug("PLUGIN: getContentsView called for id='${initialConfig.id}', name='${_currentConfig.name}'")
+    val view = contentsViewFactory.create(_currentConfig)
+    logger.debug("PLUGIN: Created view with ${_currentConfig.availableIdeProductCodes.size} IDEs, ${_currentConfig.projectPaths.size} projects")
+    return view
   }
 
   override fun setVisible(visibilityState: EnvironmentVisibilityState) {
@@ -61,7 +61,7 @@ class RemoteEnvironment(
   }
 
   fun updateConfig(newConfig: EnvironmentConfig) {
-    require(newConfig.id == initialConfig.id) { "Cannot change environment ID" }
+    require(newConfig.id == initialConfig.id) { logger.info("Cannot change environment ID for ${initialConfig.id}") }
     _currentConfig = newConfig
     _description.update {
       EnvironmentDescription.General(newConfig.description?.let { text ->
@@ -79,6 +79,7 @@ class RemoteEnvironment(
 fun EnvironmentConfig.toRemoteEnvironment(
   factory: EnvironmentContentsViewFactory = ManualContentsViewFactory(),
   localizableStringFactory: LocalizableStringFactory,
+  logger: Logger
 ): RemoteEnvironment {
-  return RemoteEnvironment(this, factory, localizableStringFactory)
+  return RemoteEnvironment(this, factory, localizableStringFactory, logger)
 }

@@ -95,7 +95,7 @@ class EnvironmentRepository(
   private fun getOrCreateEnvironment(config: EnvironmentConfig): RemoteEnvironment {
     return environmentCache.getOrPut(config.id) {
       logger.debug("Creating new environment: ${config.id}")
-      config.toRemoteEnvironment(contentsViewFactory, localizableStringFactory)
+      config.toRemoteEnvironment(contentsViewFactory, localizableStringFactory, logger)
     }.also { existingEnv ->
       // Update config if it changed
       if (existingEnv.getConfig() != config) {

@@ -2,6 +2,7 @@ package com.jetbrains.toolbox.sample.datasource
 import com.jetbrains.toolbox.api.core.diagnostics.Logger
 
 import com.jetbrains.toolbox.sample.environment.EnvironmentConfig
+import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
  * Mock data source returning static configurations.
@@ -16,7 +17,7 @@ class MockEnvironmentDataSource(
         val DEFAULT_CONFIGS = listOf(
             EnvironmentConfig(
                 id = "dev-01",
-                name = "Backend Environment",
+                name = MutableStateFlow("Backend Environment"),
                 description = "[Mocked] Environment with all backend dependencies.",
                 host = "example.example.com",
                 availableIdeProductCodes = listOf("IU", "WS"),
@@ -24,7 +25,7 @@ class MockEnvironmentDataSource(
             ),
             EnvironmentConfig(
                 id = "dev-02",
-                name = "Front-End Environment",
+                name = MutableStateFlow("Backend Environment"),
                 description = "[Mocked] Environment with all front-end dependencies.",
                 host = "example.example.com",
                 port = 2222,

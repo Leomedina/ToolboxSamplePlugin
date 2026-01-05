@@ -3,6 +3,7 @@ package com.jetbrains.toolbox.sample.environment
 import com.jetbrains.toolbox.api.remoteDev.states.EnvironmentDescription
 import com.jetbrains.toolbox.api.remoteDev.states.RemoteEnvironmentState
 import com.jetbrains.toolbox.api.remoteDev.states.StandardRemoteEnvironmentState
+import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
  * Immutable snapshot of environment configuration data.
@@ -12,7 +13,7 @@ import com.jetbrains.toolbox.api.remoteDev.states.StandardRemoteEnvironmentState
  */
 data class EnvironmentConfig(
     val id: String,
-    val name: String,
+    val name: MutableStateFlow<String>,
     val description: String? = null,
     val host: String? = null,
     val port: Int = 22,
