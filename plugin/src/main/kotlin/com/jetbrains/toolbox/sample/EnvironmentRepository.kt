@@ -3,13 +3,10 @@ package com.jetbrains.toolbox.sample
 import com.jetbrains.toolbox.api.core.diagnostics.Logger
 import com.jetbrains.toolbox.api.core.util.LoadableState
 import com.jetbrains.toolbox.api.localization.LocalizableStringFactory
-import com.jetbrains.toolbox.api.remoteDev.RemoteProviderEnvironment
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import com.jetbrains.toolbox.sample.datasource.DataSourceException
@@ -51,8 +48,7 @@ class EnvironmentRepository(
   private val environmentCache = mutableMapOf<String, RemoteEnvironment>()
 
   // Observable environment list for the provider
-  val environments: StateFlow<LoadableState<List<RemoteProviderEnvironment>>> =
-    _environments.asStateFlow()
+  val environments: MutableStateFlow<LoadableState<List<RemoteEnvironment>>> = _environments
 
   fun startPolling() {
     coroutineScope.launch(CoroutineName("EnvironmentRepository-Polling")) {
@@ -81,7 +77,7 @@ class EnvironmentRepository(
       environmentCache.keys.removeAll { it !in currentIds }
 
       _environments.value = LoadableState.Value(environments)
-      logger.info("Loaded ${environments.size} environments")
+      logger.info("PLUGIN: Setting environments to ${environments.size} items: ${environments.map { it.id }}")
 
     } catch (e: CancellationException) {
       throw e
